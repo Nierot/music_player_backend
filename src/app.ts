@@ -2,7 +2,7 @@ import express from 'express';
 const app = express();
 import { home } from './routes/home';
 import { addSong } from './routes/rest';
-import { Database } from './helpers/database';
+import { Database } from './database/database';
 // @ts-expect-error
 import { port, route } from './settings.js';
 
