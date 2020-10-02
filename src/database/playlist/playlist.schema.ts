@@ -1,7 +1,6 @@
 import { Schema } from 'mongoose';
 import { findByID, findByUser, findOneOrCreate } from './playlist.statics';
 import { setLastUpdated } from './playlist.methods';
-import 'crypto';
 
 const PlaylistSchema = new Schema({
     name: String,
