@@ -4,16 +4,16 @@ import { IPlaylistDocument, IPlaylistModel } from './playlist.types';
  * Find a playlist by its mongodb ID
  * @param id The ID to search
  */
-export async function findByID( this: IPlaylistModel, id: String ): Promise<IPlaylistDocument[]> {
+export async function findByID( this: IPlaylistModel, id: string ): Promise<IPlaylistDocument[]> {
     return this.find({ _id: id });
 }
 
 /**
  * Find all playlist from one user
- * @param user The user to find 
+ * @param user The user to find
  */
-export async function findByUser( this: IPlaylistModel, user: String): Promise<IPlaylistDocument[]> {
-    return this.find({ user: user });
+export async function findByUser( this: IPlaylistModel, user: string): Promise<IPlaylistDocument[]> {
+    return this.find({ user });
 }
 
 /**
@@ -23,16 +23,16 @@ export async function findByUser( this: IPlaylistModel, user: String): Promise<I
  * @param name The name of the playlist
  * @param type The type of the playlist (public/private etc.)
  */
-export async function findOneOrCreate( this: IPlaylistModel, user: String, name: String, type: String): Promise<IPlaylistDocument> {
-    const record = await this.findOne({ user: user, name: name });
+export async function findOneOrCreate( this: IPlaylistModel, user: string, name: string, type: string): Promise<IPlaylistDocument> {
+    const record = await this.findOne({ user, name });
     if (record.name === name) {
         return record;
     } else {
         return this.create({
-            user: user,
-            name: name,
-            type: type,
-            creators: [ user ],
+            user,
+            name,
+            type,
+            creators: [],
             dateCreated: new Date(),
             lastUpdated: new Date(),
             playlist: []

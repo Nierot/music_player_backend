@@ -1,23 +1,23 @@
-import * as Mongoose from 'mongoose';
+import mongoose from 'mongoose';
 // @ts-expect-error
 import { mongo } from '../settings.js';
 
-class Database {
+export default class Database {
 
-    db: Mongoose.Connection;
+    db: mongoose.Connection;
 
     connect() {
         if (this.db) return
         console.log('Connecting to the database...');
 
-        Mongoose.connect(mongo, {
+        mongoose.connect(mongo, {
             useNewUrlParser: true,
             useFindAndModify: true,
             useUnifiedTopology: true,
             useCreateIndex: true
         });
 
-        this.db = Mongoose.connection;
+        this.db = mongoose.connection;
 
         this.db.once('open', async () => console.log('Connected to the database'));
 
@@ -30,8 +30,6 @@ class Database {
     disconnect() {
         if (!this.db) return
 
-        Mongoose.disconnect();
+        mongoose.disconnect();
     }
 }
-
-export { Database }

@@ -1,34 +1,34 @@
 import { Document, Model } from "mongoose";
 
 export interface IPlaylist {
-    name: String,
-    type: String,
-    user: String,
-    creators: Array<String>,
+    name: string,
+    type: string,
+    user: string,
+    creators: string[],
     dateCreated: Date,
     lastUpdated: Date,
-    playlist: Array<number>
+    playlist: number[]
 }
 
-export interface IPlaylistDocument extends IPlaylist, Document { 
+export interface IPlaylistDocument extends IPlaylist, Document {
     setLastUpdated: (this: IPlaylistDocument) => Promise<void>;
 }
 
 export interface IPlaylistModel extends Model<IPlaylistDocument> {
     findOneOrCreate: (
         this: IPlaylistModel,
-        user: String,
-        name: String,
-        type: String
+        user: string,
+        name: string,
+        type: string
     ) => Promise<IPlaylistDocument>;
 
     findByUser: (
         this: IPlaylistModel,
-        user: String
+        user: string
     ) => Promise<IPlaylistDocument[]>;
 
     findByID: (
         this: IPlaylistModel,
-        id: String
+        id: string
     ) => Promise<IPlaylistDocument[]>;
 }
