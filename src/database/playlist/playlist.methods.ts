@@ -1,4 +1,3 @@
-import { Document } from 'mongoose';
 import { IPlaylistDocument } from './playlist.types';
 
 /**

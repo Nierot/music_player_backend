@@ -1,5 +1,5 @@
 import { model } from 'mongoose';
-import { ISongDocument } from './song.types';
+import { ISongDocument, ISongModel } from './song.types';
 import SongSchema from './song.schema';
 
-export const SongModel = model<ISongDocument>('song', SongSchema);
+export const SongModel = model<ISongDocument, ISongModel>('song', SongSchema);

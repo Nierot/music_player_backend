@@ -4,7 +4,7 @@ import { addSong, newPlaylist } from './routes/rest';
 import Database from './database/database';
 import bodyParser from 'body-parser';
 // @ts-expect-error
-import { port, route } from './settings.js';
+import { port, route, debug } from './settings.js';
 
 // Create the express app and define middleware
 const app = express();
@@ -17,8 +17,8 @@ db.connect();
 
 // Routes
 app.get(route, home);
-app.post(`${route}playlist`, async (req, res) => await newPlaylist(req, res, db));
-app.post(`${route}song`, async (req, res) => await addSong(req, res, db));
+app.post(`${route}playlist`, async (req, res) => await newPlaylist(req, res, db, debug));
+app.post(`${route}song`, async (req, res) => await addSong(req, res, db, debug));
 
 
 // Express things

@@ -7,7 +7,7 @@ export interface IPlaylist {
     creators: string[],
     dateCreated: Date,
     lastUpdated: Date,
-    playlist: number[]
+    playlist: string[]
 }
 
 export interface IPlaylistDocument extends IPlaylist, Document {
