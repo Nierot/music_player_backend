@@ -1,5 +1,5 @@
 import { Schema } from 'mongoose';
-import { findBySongID, findBySpotifyID } from './song.statics';
+import { findBySongID, findBySpotifyID, findByYoutubeID } from './song.statics';
 
 const SongSchema = new Schema({
     title: String,
@@ -8,12 +8,13 @@ const SongSchema = new Schema({
     length: Number,
     songId: String,
     typeData: Object // Object that contains data for the specific song type
-    // mp3: { path: Path }
-    // youtube: { id: String }
-    // spotify: { id: String }
+                     // mp3: { fileName: String }
+                     // youtube: { id: String }
+                     // spotify: { id: String }
 })
 
 SongSchema.statics.findBySongID = findBySongID;
 SongSchema.statics.findBySpotifyID = findBySpotifyID;
+SongSchema.statics.findByYoutubeID = findByYoutubeID;
 
 export default SongSchema;

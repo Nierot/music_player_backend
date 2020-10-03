@@ -8,6 +8,18 @@ export async function findBySongID( this: ISongModel, songID: string ): Promise<
     return this.find({ songId: songID});
 }
 
+/**
+ * Find a spotify song in the database by its SpotifyID
+ * @param spotifyID ID to find.
+ */
 export async function findBySpotifyID( this: ISongModel, spotifyID: string): Promise<ISongDocument[]> {
     return this.find({ type: 'spotify', typeData: { id: spotifyID } });
+}
+
+/**
+ * Find a youtube video in the database
+ * @param youtubeID string of the ID of the youtube video
+ */
+export async function findByYoutubeID( this: ISongModel, youtubeID: string): Promise<ISongDocument[]> {
+    return this.find({ type: 'youtube', typeData: { id: youtubeID }});
 }
