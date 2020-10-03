@@ -1,6 +1,6 @@
 import express from 'express';
 import { home } from './routes/home';
-import { addSong, newPlaylist } from './routes/rest';
+import { addSong, newPlaylist, addSongToPlaylist } from './routes/rest';
 import Database from './database/database';
 import bodyParser from 'body-parser';
 // @ts-expect-error
@@ -17,6 +17,7 @@ db.connect();
 
 // Routes
 app.get(route, home);
+app.post(`${route}playlist/song`, async (req, res) => await addSongToPlaylist(req, res, db, debug));
 app.post(`${route}playlist`, async (req, res) => await newPlaylist(req, res, db, debug));
 app.post(`${route}song`, async (req, res) => await addSong(req, res, db, debug));
 

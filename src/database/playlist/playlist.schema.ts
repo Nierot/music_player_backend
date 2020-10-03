@@ -1,6 +1,6 @@
 import { Schema } from 'mongoose';
-import { findByID, findByUser, findOneOrCreate } from './playlist.statics';
-import { setLastUpdated } from './playlist.methods';
+import { findByUser, findOneOrCreate } from './playlist.statics';
+import { setLastUpdated, addSong } from './playlist.methods';
 
 const PlaylistSchema = new Schema({
     name: String,
@@ -21,13 +21,23 @@ const PlaylistSchema = new Schema({
     playlist: { // Array of song IDs that are in this playlist
         type: Array,
         default: []
+    },
+    settings: {
+        type: Object,
+        default: {
+            duplicates: true,
+            maxLength: -1,
+            allowYoutube: true,
+            allowMP3: true,
+            allowSpotify: true
+        }
     }
 });
 
-PlaylistSchema.statics.findByID = findByID;
 PlaylistSchema.statics.findByUser = findByUser;
 PlaylistSchema.statics.findOneOrCreate = findOneOrCreate;
 
 PlaylistSchema.methods.setLastUpdated = setLastUpdated;
+PlaylistSchema.methods.addSong = addSong;
 
 export default PlaylistSchema;

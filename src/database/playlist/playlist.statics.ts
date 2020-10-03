@@ -1,14 +1,6 @@
 import { IPlaylistDocument, IPlaylistModel } from './playlist.types';
 
 /**
- * Find a playlist by its mongodb ID
- * @param id The ID to search
- */
-export async function findByID( this: IPlaylistModel, id: string ): Promise<IPlaylistDocument[]> {
-    return this.find({ _id: id });
-}
-
-/**
  * Find all playlist from one user
  * @param user The user to find
  */
@@ -25,9 +17,7 @@ export async function findByUser( this: IPlaylistModel, user: string): Promise<I
  */
 export async function findOneOrCreate( this: IPlaylistModel, user: string, name: string, type: string): Promise<IPlaylistDocument> {
     const record = await this.findOne({ user, name });
-    if (record.name === name) {
-        return record;
-    } else {
+    if (record === null || record.name === name) {
         return this.create({
             user,
             name,
@@ -35,7 +25,14 @@ export async function findOneOrCreate( this: IPlaylistModel, user: string, name:
             creators: [],
             dateCreated: new Date(),
             lastUpdated: new Date(),
-            playlist: []
+            playlist: [],
+            settings: {
+                duplicates: true,
+                maxLength: -1,
+                allowYoutube: true,
+                allowMP3: true,
+                allowSpotify: true
+            }
         })
     }
 }

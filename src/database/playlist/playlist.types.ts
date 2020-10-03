@@ -7,11 +7,22 @@ export interface IPlaylist {
     creators: string[],
     dateCreated: Date,
     lastUpdated: Date,
-    playlist: string[]
+    playlist: string[],
+    settings: {
+        duplicates: boolean,
+        maxLength: number,
+        allowYoutube: boolean,
+        allowMP3: boolean,
+        allowSpotify: boolean
+    }
 }
 
 export interface IPlaylistDocument extends IPlaylist, Document {
     setLastUpdated: (this: IPlaylistDocument) => Promise<void>;
+    addSong: (
+        this: IPlaylistDocument,
+        songID: string
+    ) => Promise<void>;
 }
 
 export interface IPlaylistModel extends Model<IPlaylistDocument> {
@@ -25,10 +36,5 @@ export interface IPlaylistModel extends Model<IPlaylistDocument> {
     findByUser: (
         this: IPlaylistModel,
         user: string
-    ) => Promise<IPlaylistDocument[]>;
-
-    findByID: (
-        this: IPlaylistModel,
-        id: string
     ) => Promise<IPlaylistDocument[]>;
 }

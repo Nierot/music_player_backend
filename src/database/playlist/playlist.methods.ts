@@ -10,3 +10,15 @@ export async function setLastUpdated(this: IPlaylistDocument): Promise<void> {
         await this.save();
     }
 }
+
+/**
+ * Adds a song to given playlist and updates lastUpdated field
+ * @param songID string
+ * @requires songID to be in the database
+ */
+export async function addSong(this: IPlaylistDocument, songID: string): Promise<void> {
+    // if (this.)
+    this.playlist.push(songID);
+    await this.setLastUpdated();
+    await this.save();
+}
