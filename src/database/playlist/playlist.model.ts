@@ -1,5 +1,5 @@
 import { model } from "mongoose";
-import { IPlaylistDocument } from "./playlist.types";
+import { IPlaylistDocument, IPlaylistModel } from "./playlist.types";
 import PlaylistSchema from "./playlist.schema";
 
-export const PlaylistModel = model<IPlaylistDocument>("playlist", PlaylistSchema);
+export const PlaylistModel = model<IPlaylistDocument, IPlaylistModel>("playlist", PlaylistSchema);
