@@ -6,7 +6,7 @@ export interface ISong {
     type: 'mp3' | 'youtube' | 'spotify',
     length: number,
     songId: string,
-    typeData: object
+    typeId: string
 }
 
 export interface ISongDocument extends ISong, Document { }

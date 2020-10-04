@@ -13,7 +13,7 @@ export async function findBySongID( this: ISongModel, songID: string ): Promise<
  * @param spotifyID ID to find.
  */
 export async function findBySpotifyID( this: ISongModel, spotifyID: string): Promise<ISongDocument[]> {
-    return this.find({ type: 'spotify', typeData: { id: spotifyID } });
+    return this.find({ type: 'spotify', typeId: spotifyID });
 }
 
 /**
@@ -21,5 +21,5 @@ export async function findBySpotifyID( this: ISongModel, spotifyID: string): Pro
  * @param youtubeID string of the ID of the youtube video
  */
 export async function findByYoutubeID( this: ISongModel, youtubeID: string): Promise<ISongDocument[]> {
-    return this.find({ type: 'youtube', typeData: { id: youtubeID }});
+    return this.find({ type: 'youtube', typeid: youtubeID });
 }
