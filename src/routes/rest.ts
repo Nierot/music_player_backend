@@ -34,7 +34,7 @@ export async function addSong(req: any, res: any, db: Database, debug: boolean):
         artist: b.artist,
         type: b.type,
         songId: crypto.randomBytes(6).toString('base64'), // Generate a random ID
-        typeData: b.typeData
+        typeId: b.id
     }).then(data => res.status(201).send(data.songId))
     else {
         res.status(200).send('ok');
