@@ -11,8 +11,7 @@ export async function addSong(req: any, res: any, db: Database, debug: boolean):
     if (!b.title || !b.artist || !b.type || !b.length || !b.typeData) return badRequest(res, 'parameters missing');
     if (!song_types.includes(b.type)) return badRequest(res, 'type incorrect');
     if ((b.type === 'spotify' || b.type === 'youtube') && !b.typeData.id) return badRequest(res, 'typeData incorrect, id missing');
-    if (b.type === 'mp3' && !b.typeData.fileName) return badRequest(res, 'typeData incorrect, fileName missing');
-
+    
     if (debug) console.log('Trying to add a song: ', b);
 
     let alreadyInDatabase: boolean = false;

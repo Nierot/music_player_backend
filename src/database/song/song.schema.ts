@@ -8,7 +8,7 @@ const SongSchema = new Schema({
     length: Number,
     songId: String,
     typeData: Object // Object that contains data for the specific song type
-                     // mp3: { fileName: String }
+                     // mp3: nothing
                      // youtube: { id: String }
                      // spotify: { id: String }
 })
