@@ -1,0 +1,10 @@
+GET https://api.nierot.com/search?query=Sum%2041 HTTP/1.1
+
+###
+
+POST https://api.nierot.com/youtube/
+Content-Type: application/json
+
+{
+    "id": "mw0jCyH5cZA"
+}

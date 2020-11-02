@@ -1,11 +1,11 @@
 import express from 'express';
 // import * as socketIO from 'socket.io';
 import { home } from './routes/home';
-import { addSong, newPlaylist, addSongToPlaylist } from './routes/rest';
+import { addSong, newPlaylist, addSongToPlaylist, playlistExists } from './routes/rest';
 import Database from './database/database';
 import bodyParser from 'body-parser';
 import * as crypto from 'crypto';
-import { createServer, Server } from 'http';
+import { createServer } from 'http';
 import { checkSpotifyCode, refreshSpotifyCode } from './routes/spotify';
 import { pause, skip, previous, checkCode } from './routes/controller';
 // @ts-expect-error
@@ -38,9 +38,10 @@ io.on('connection', (socket: SocketIO.Socket) => {
 
 // Routes
 app.get(route, home);
-app.post(`${route}playlist/song`, async (req, res) => await addSongToPlaylist(req, res, db, debug));
-app.post(`${route}playlist`, async (req, res) => await newPlaylist(req, res, db, debug));
-app.post(`${route}song`, async (req, res) => await addSong(req, res, db, debug));
+app.post(`${route}playlist/song`, async (req, res) => await addSongToPlaylist(req, res));
+app.post(`${route}playlist/exists`, async (req, res) => await playlistExists(req, res));
+app.post(`${route}playlist`, async (req, res) => await newPlaylist(req, res));
+app.post(`${route}song`, async (req, res) => await addSong(req, res));
 app.post(`${route}spotify`, async (req, res) => await checkSpotifyCode(req, res));
 app.post(`${route}refresh`, async (req, res) => await refreshSpotifyCode(req, res));
 app.post(`${route}controller/pause`, (req, res) => pause(req, res, clients));

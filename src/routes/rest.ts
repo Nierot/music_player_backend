@@ -5,26 +5,33 @@ import crypto from 'crypto';
 // @ts-expect-error
 import { song_types } from '../settings.js';
 
-export async function addSong(req: any, res: any, db: Database, debug: boolean): Promise<void> {
+export async function addSong(req: any, res: any): Promise<void> {
     const b: any = req.body;
 
     if (!b.title || !b.artist || !b.type || !b.length || !b.typeData) return badRequest(res, 'parameters missing');
     if (!song_types.includes(b.type)) return badRequest(res, 'type incorrect');
     if ((b.type === 'spotify' || b.type === 'youtube') && !b.typeData.id) return badRequest(res, 'typeData incorrect, id missing');
 
-    if (debug) console.log('Trying to add a song: ', b);
+    console.log('Trying to add a song: ', b);
 
     let alreadyInDatabase: boolean = false;
+    let songID: string;
 
     if (b.type === 'spotify') {
         await SongModel.findBySpotifyID(b.typeData.id).then(data => {
-            if (data.length !== 0) alreadyInDatabase = true;
+            if (data.length !== 0) {
+                alreadyInDatabase = true;
+                songID = data[0].songId;
+            }
         })
     }
 
     if (b.type === 'youtube') {
         await SongModel.findByYoutubeID(b.typeData.id).then(data => {
-            if (data.length !== 0) alreadyInDatabase = true;
+            if (data.length !== 0) {
+                alreadyInDatabase = true;
+                songID = data[0].songId;
+            }
         })
     }
 
@@ -34,10 +41,10 @@ export async function addSong(req: any, res: any, db: Database, debug: boolean):
         artist: b.artist,
         type: b.type,
         songId: crypto.randomBytes(6).toString('base64'), // Generate a random ID
-        typeId: b.id
+        typeId: b.typeData.id
     }).then(data => res.status(201).send(data.songId))
     else {
-        res.status(200).send('ok');
+        res.status(200).send(songID);
         console.log('Song already in database');
     }
 }
@@ -46,24 +53,26 @@ function badRequest(res: any, reason: string): void {
     return res.status(400).send(`Bad Request: ${reason}`)
 }
 
-export async function newPlaylist(req: any, res: any, db: Database, debug: boolean): Promise<void> {
+export async function newPlaylist(req: any, res: any): Promise<void> {
     const b: any = req.body;
 
-    if (!b.name || !b.type || !b.user) badRequest(res, 'Parameters missing');
+    if (!b.name || !b.type || !b.user) return badRequest(res, 'Parameters missing');
 
-    if (debug) console.log('Trying to create a new playlist', b);
+    console.log('Trying to create a new playlist', b);
+
+    // TODO settings
 
     PlaylistModel.findOneOrCreate(b.user, b.name, b.type);
 
     res.status(201).send('added the playlist');
 }
 
-export async function addSongToPlaylist(req: any, res: any, db: Database, debug: boolean): Promise<void> {
+export async function addSongToPlaylist(req: any, res: any): Promise<void> {
     const b: any = req.body;
 
-    if (!b.songID || !b.playlistID || !b.user) badRequest(res, 'Parameters missing');
+    if (!b.songID || !b.playlistID || !b.user) return badRequest(res, 'Parameters missing');
 
-    if (debug) console.log('Trying to add a song to a playlist', b);
+    console.log('Trying to add a song to a playlist', b);
 
     let songExists: boolean = false;
     let songType: string = '';
@@ -77,9 +86,8 @@ export async function addSongToPlaylist(req: any, res: any, db: Database, debug:
         }
     })
 
-    if (!songExists) {
-        return badRequest(res, 'Song does not exist in database');
-    }
+    if (!songExists) return badRequest(res, 'Song does not exist in database');
+
 
     await PlaylistModel.findById(b.playlistID).then(data => {
         if (data.playlist.includes(b.songID) && !data.settings.duplicates) {
@@ -95,4 +103,12 @@ export async function addSongToPlaylist(req: any, res: any, db: Database, debug:
         data.addSong(b.songID)
         res.status(201).send('added to the playlist');
     })
+}
+
+export async function playlistExists(req: any, res: any) {
+    let exists: boolean;
+
+    exists = await PlaylistModel.exists({ _id: req.body.playlistID }).catch(err => exists = false)
+
+    res.status(200).json({ exists })
 }
