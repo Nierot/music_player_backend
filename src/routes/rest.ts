@@ -49,6 +49,17 @@ export async function addSong(req: any, res: any): Promise<void> {
     }
 }
 
+export async function getSongInfo(req: any, res: any): Promise<void> {
+    const songID: string = req.query.song;
+
+    if (!songID) return badRequest(res, 'no songID given')
+
+    SongModel.findBySongID(songID)
+        .then(data => res.status(200).send(data[0]))
+        .catch(err => res.status(500).send(err))
+}
+
+
 function badRequest(res: any, reason: string): void {
     return res.status(400).send(`Bad Request: ${reason}`)
 }
@@ -105,10 +116,27 @@ export async function addSongToPlaylist(req: any, res: any): Promise<void> {
     })
 }
 
-export async function playlistExists(req: any, res: any) {
+export async function playlistExists(req: any, res: any): Promise<void> {
     let exists: boolean;
 
     exists = await PlaylistModel.exists({ _id: req.body.playlistID }).catch(err => exists = false)
 
     res.status(200).json({ exists })
+}
+
+export async function getAllPublicLists(req: any, res: any): Promise<void> {
+    await PlaylistModel
+        .find({ type: 'public' })
+        .lean()
+        .then(data => res.status(200).send(data))
+        .catch(err => res.status(500).send(err))
+}
+
+export async function getOwnPlaylist(req: any, res: any): Promise<void> {
+    if (!req.query || !req.query.user) return badRequest(res, 'no user given');
+    await PlaylistModel
+        .find({ user: req.query.user })
+        .lean()
+        .then(data => res.status(200).send(data))
+        .catch(err => res.status(500).send(err))
 }
