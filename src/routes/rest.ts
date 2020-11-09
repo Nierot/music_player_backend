@@ -1,9 +1,9 @@
-import Database from '../database/database';
 import { PlaylistModel } from '../database/playlist/playlist.model';
 import { SongModel } from '../database/song/song.model';
 import crypto from 'crypto';
 // @ts-expect-error
-import { song_types } from '../settings.js';
+import { song_types, youtube_download_url } from '../settings.js';
+import Axios from 'axios';
 
 export async function addSong(req: any, res: any): Promise<void> {
     const b: any = req.body;
@@ -27,10 +27,12 @@ export async function addSong(req: any, res: any): Promise<void> {
     }
 
     if (b.type === 'youtube') {
-        await SongModel.findByYoutubeID(b.typeData.id).then(data => {
+        await SongModel.findByYoutubeID(b.typeData.id).then(async data => {
             if (data.length !== 0) {
                 alreadyInDatabase = true;
                 songID = data[0].songId;
+            } else {
+                await downloadYoutube(b.typeData.id);
             }
         })
     }
@@ -40,13 +42,19 @@ export async function addSong(req: any, res: any): Promise<void> {
         title: b.title,
         artist: b.artist,
         type: b.type,
-        songId: crypto.randomBytes(6).toString('base64'), // Generate a random ID
+        songId: crypto.randomBytes(6).toString('base64').replace('/', '-'), // Generate a random ID
         typeId: b.typeData.id
     }).then(data => res.status(201).send(data.songId))
     else {
         res.status(200).send(songID);
         console.log('Song already in database');
     }
+}
+
+async function downloadYoutube(id: string): Promise<void> {
+    Axios
+        .post(youtube_download_url, { id })
+        .catch(console.error)
 }
 
 export async function getSongInfo(req: any, res: any): Promise<void> {
@@ -71,9 +79,9 @@ export async function newPlaylist(req: any, res: any): Promise<void> {
 
     console.log('Trying to create a new playlist', b);
 
-    // TODO settings
+    const playlist = PlaylistModel.findOneOrCreate(b.user, b.name, b.type);
 
-    PlaylistModel.findOneOrCreate(b.user, b.name, b.type);
+    console.log(playlist);
 
     res.status(201).send('added the playlist');
 }

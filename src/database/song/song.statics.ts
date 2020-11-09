@@ -21,5 +21,5 @@ export async function findBySpotifyID( this: ISongModel, spotifyID: string): Pro
  * @param youtubeID string of the ID of the youtube video
  */
 export async function findByYoutubeID( this: ISongModel, youtubeID: string): Promise<ISongDocument[]> {
-    return this.find({ type: 'youtube', typeid: youtubeID });
+    return this.find({ type: 'youtube', typeId: youtubeID });
 }
