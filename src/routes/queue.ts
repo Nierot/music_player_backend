@@ -13,7 +13,7 @@ export async function getQueue(req: any, res: any, queue: Map<string, string[]>)
 }
 
 export async function nextInQueue(req: any, res: any, queue: Map<string, string[]>): Promise<void> {
-    if (!req.query || !req.query.p) return res.status(400).json({ error: 'playlist missing' })
+    if (!req.query || !req.query.p) return res.status(400).json({ status: 400, error: 'playlist missing' })
 
     const playlist: string = req.query.p;
     let currentQueue: string[] = queue.get(playlist);
