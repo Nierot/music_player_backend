@@ -16,9 +16,9 @@ export async function setLastUpdated(this: IPlaylistDocument): Promise<void> {
  * @param songID string
  * @requires songID to be in the database
  */
-export async function addSong(this: IPlaylistDocument, songID: string): Promise<void> {
-    // if (this.)
-    this.playlist.push(songID);
+export async function addSong(this: IPlaylistDocument, songObject: object): Promise<void> {
+    // TODO check settings
+    this.playlist.push(songObject);
     await this.setLastUpdated();
     await this.save();
 }

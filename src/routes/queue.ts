@@ -23,7 +23,7 @@ export async function nextInQueue(req: any, res: any, queue: Map<string, string[
     currentQueue = queue.get(playlist);
     const next = currentQueue.shift();
 
-    res.status(200).json({ status: 200, message: 'ok', next})
+    res.status(200).json({ status: 200, message: 'ok', next })
 
 }
 

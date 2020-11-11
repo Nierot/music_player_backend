@@ -41,6 +41,7 @@ export async function addSong(req: any, res: any): Promise<void> {
         length: b.length || 0,
         title: b.title,
         artist: b.artist,
+        coverArt: b.coverArt || undefined,
         type: b.type,
         songId: crypto.randomBytes(6).toString('base64').replace('/', '-'), // Generate a random ID
         typeId: b.typeData.id
@@ -63,8 +64,8 @@ export async function getSongInfo(req: any, res: any): Promise<void> {
     if (!songID) return badRequest(res, 'no songID given')
 
     SongModel.findBySongID(songID)
-        .then(data => res.status(200).send(data[0]))
-        .catch(err => res.status(500).send(err))
+        .then(data => res.status(200).json({ status: 200, message: 'ok', song: data[0] }))
+        .catch(err => res.status(500).json({ status: 500, message: 'server error', err }))
 }
 
 
@@ -119,7 +120,9 @@ export async function addSongToPlaylist(req: any, res: any): Promise<void> {
             return badRequest(res, 'That song type is not allowed in this playlist');
         }
 
-        data.addSong(b.songID)
+        if (!data.creators.includes(b.user)) data.creators.push(b.user);
+
+        data.addSong({ songID: b.songID, user: b.user });
         res.status(201).send('added to the playlist');
     })
 }

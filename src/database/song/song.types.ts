@@ -5,6 +5,7 @@ export interface ISong {
     artist: string,
     type: 'mp3' | 'youtube' | 'spotify',
     length: number,
+    coverArt: string,
     songId: string,
     typeId: string
 }

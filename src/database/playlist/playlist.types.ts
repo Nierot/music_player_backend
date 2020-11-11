@@ -7,7 +7,7 @@ export interface IPlaylist {
     creators: string[],
     dateCreated: Date,
     lastUpdated: Date,
-    playlist: string[],
+    playlist: object[],
     settings: {
         duplicates: boolean,
         maxLength: number,
@@ -21,7 +21,7 @@ export interface IPlaylistDocument extends IPlaylist, Document {
     setLastUpdated: (this: IPlaylistDocument) => Promise<void>;
     addSong: (
         this: IPlaylistDocument,
-        songID: string
+        songObject: object
     ) => Promise<void>;
 }
 
