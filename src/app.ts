@@ -7,12 +7,12 @@ import bodyParser from 'body-parser';
 import * as crypto from 'crypto';
 import { checkSpotifyCode, refreshSpotifyCode } from './routes/spotify';
 import { pause, skip, previous, checkCode } from './routes/controller';
-import { getQueue, nextInQueue } from './routes/queue';
+import { getPeople, getQueue, makeQueue, nextInQueue } from './routes/queue';
 // @ts-expect-error
 import { port, route, debug } from './settings.js';
 // @ts-expect-error
 import cors from 'cors';
-import { finished } from './routes/queue';
+import { type } from 'os';
 
 // Create the express app and define middleware
 const app = express();
@@ -26,7 +26,8 @@ const db: Database = new Database();
 db.connect();
 
 // Queue
-const queue: Map<string, string[]> = new Map();
+const queue: Map<string, object[]> = new Map();
+const eventSettings: Map<string, object> = new Map();
 
 // Routes
 app.post(`${route}playlist/song`, async (req, res) => await addSongToPlaylist(req, res));
@@ -42,8 +43,10 @@ app.post(`${route}controller/pause`, (req, res) => pause(req, res, clients));
 app.post(`${route}controller/skip`, (req, res) => skip(req, res, clients));
 app.post(`${route}controller/previous`, (req, res) => previous(req, res, clients));
 app.post(`${route}controller/check`, (req, res) => checkCode(req, res, clients));
-app.get(`${route}queue/next`, async (req, res) => await nextInQueue(req, res, queue));
-app.get(`${route}queue`, async (req, res) => await getQueue(req, res, queue));
+app.get(`${route}queue/next`, async (req, res) => await nextInQueue(req, res, queue, eventSettings));
+app.get(`${route}queue/generate`, async (req, res) => await makeQueue(req, res, queue, eventSettings));
+app.get(`${route}queue/people`, (req, res) => getPeople(req, res, eventSettings));
+app.get(`${route}queue`, async (req, res) => await getQueue(req, res, queue, eventSettings));
 app.get(route, home);
 
 
@@ -60,7 +63,6 @@ io.sockets.on('connection', (socket: SocketIO.Socket) => {
     const id: string = crypto.randomBytes(2).toString('hex');
     clients.set(id, socket);
     io.emit('code', id);
-    socket.on('finished', finished);
     console.log(`New client ${id}`);
 });
 
