@@ -9,7 +9,10 @@ export async function makeQueue(req: any, res: any, queue: Map<string, object[]>
     const playlist: string = req.query.p;
     const events: boolean = req.query.events == 'true';
     const people: string[] = req.query.listOfPeople.split(',');
-    const songsBetweenEvents: number = Number.parseInt(req.query.songsBetweenEvents, 10);
+    let songsBetweenEvents: number = -1;
+    if (events) {
+        songsBetweenEvents = Number.parseInt(req.query.songsBetweenEvents, 10);
+    }
 
     if (isNaN(songsBetweenEvents)) return res.status(500).json({ status: 500, message: 'not an int' });
 
