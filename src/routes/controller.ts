@@ -14,7 +14,10 @@ export function skip(req: any, res: any, clients: Map<string, Socket>): void {
 
     const code: string = req.body.playerCode;
 
-    if (checkRequest(code, res, clients)) clients.get(code).emit('skip');
+    if (checkRequest(code, res, clients)) {
+        clients.get(code).emit('skip');
+        res.status(200).send('ok');
+    }
 
 }
 
@@ -22,7 +25,10 @@ export function previous(req: any, res: any, clients: Map<string, Socket>): void
 
     const code: string = req.body.playerCode;
 
-    if (checkRequest(code, res, clients)) clients.get(code).emit('previous');
+    if (checkRequest(code, res, clients)) {
+        clients.get(code).emit('previous');
+        res.status(200).send('ok');
+    }
 
 }
 
@@ -30,7 +36,9 @@ export function checkCode(req: any, res: any, clients: Map<string, Socket>): voi
 
     const code: string = req.body.playerCode;
 
-    if (checkRequest(code, res, clients)) res.status(200).send('ok');
+    if (checkRequest(code, res, clients)) {
+        res.status(200).send('ok');
+    }
 
 }
 
@@ -40,11 +48,10 @@ function checkRequest(code: any, res: any, clients: Map<string, Socket>): boolea
     if (code === undefined) {
         res.status(400).send('No code given');
         return false;
-    }
-    if (!clients.has(code)) {
+    } else if (!clients.has(code)) {
         res.status(400).send('Client does not exist');
         return false;
+    } else {
+        return true;
     }
-
-    return true;
 }
