@@ -63,6 +63,12 @@ export async function getSongInfo(req: any, res: any): Promise<void> {
 
     if (!songID) return badRequest(res, 'no songID given')
 
+    if (songID === 'event') {
+        return res.status(200).json({ status: 200, message: 'ok', song: {
+            type: 'event'
+        }})
+    }
+
     SongModel.findBySongID(songID)
         .then(data => res.status(200).json({ status: 200, message: 'ok', song: data[0] }))
         .catch(err => res.status(500).json({ status: 500, message: 'server error', err }))
