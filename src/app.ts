@@ -27,10 +27,11 @@ db.connect();
 
 // Queue
 const queue: Map<string, object[]> = new Map();
+const alreadyPlayed: Map<string, object[]> = new Map();
 const eventSettings: Map<string, object> = new Map();
 
 // Routes
-app.post(`${route}playlist/song`, async (req, res) => await addSongToPlaylist(req, res));
+app.post(`${route}playlist/song`, async (req, res) => await addSongToPlaylist(req, res, queue, eventSettings, alreadyPlayed));
 app.post(`${route}playlist/exists`, async (req, res) => await playlistExists(req, res));
 app.get(`${route}playlist/all`, async (req, res) => await getAllPublicLists(req, res));
 app.post(`${route}playlist`, async (req, res) => await newPlaylist(req, res));
@@ -43,10 +44,10 @@ app.post(`${route}controller/pause`, (req, res) => pause(req, res, clients));
 app.post(`${route}controller/skip`, (req, res) => skip(req, res, clients));
 app.post(`${route}controller/previous`, (req, res) => previous(req, res, clients));
 app.post(`${route}controller/check`, (req, res) => checkCode(req, res, clients));
-app.get(`${route}queue/next`, async (req, res) => await nextInQueue(req, res, queue, eventSettings));
-app.get(`${route}queue/generate`, async (req, res) => await makeQueue(req, res, queue, eventSettings));
+app.get(`${route}queue/next`, async (req, res) => await nextInQueue(req, res, queue, eventSettings, alreadyPlayed));
+app.get(`${route}queue/generate`, async (req, res) => await makeQueue(req, res, queue, eventSettings, alreadyPlayed));
 app.get(`${route}queue/people`, (req, res) => getPeople(req, res, eventSettings));
-app.get(`${route}queue`, async (req, res) => await getQueue(req, res, queue, eventSettings));
+app.get(`${route}queue`, async (req, res) => await getQueue(req, res, queue, eventSettings, alreadyPlayed));
 app.get(route, home);
 
 
@@ -60,7 +61,8 @@ const clients: Map<string, SocketIO.Socket> = new Map();
 const io = require('socket.io').listen(server);
 
 io.sockets.on('connection', (socket: SocketIO.Socket) => {
-    const id: string = crypto.randomBytes(2).toString('hex');
+    // const id: string = crypto.randomBytes(2).toString('hex');
+    const id: string = 'aaaa';
     clients.set(id, socket);
     io.emit('code', id);
     console.log(`New client ${id}`);

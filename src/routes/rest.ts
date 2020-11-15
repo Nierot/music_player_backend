@@ -4,6 +4,7 @@ import crypto from 'crypto';
 // @ts-expect-error
 import { song_types, youtube_download_url } from '../settings.js';
 import Axios from 'axios';
+import { generateQueue } from './queue';
 
 export async function addSong(req: any, res: any): Promise<void> {
     const b: any = req.body;
@@ -43,7 +44,7 @@ export async function addSong(req: any, res: any): Promise<void> {
         artist: b.artist,
         coverArt: b.coverArt || undefined,
         type: b.type,
-        songId: crypto.randomBytes(6).toString('base64').replace('/', '-'), // Generate a random ID
+        songId: crypto.randomBytes(6).toString('base64').replace('/', '-').replace('+', '_'), // Generate a random ID
         typeId: b.typeData.id
     }).then(data => res.status(201).send(data.songId))
     else {
@@ -70,8 +71,8 @@ export async function getSongInfo(req: any, res: any): Promise<void> {
     }
 
     SongModel.findBySongID(songID)
-        .then(data => res.status(200).json({ status: 200, message: 'ok', song: data[0] }))
-        .catch(err => res.status(500).json({ status: 500, message: 'server error', err }))
+        .then(data => res.status(200).json({ status: 200, message: 'ok', song: data[0], songID }))
+        .catch(err => res.status(500).json({ status: 500, message: 'server error', err, songID }))
 }
 
 
@@ -88,12 +89,10 @@ export async function newPlaylist(req: any, res: any): Promise<void> {
 
     const playlist = PlaylistModel.findOneOrCreate(b.user, b.name, b.type);
 
-    console.log(playlist);
-
     res.status(201).send('added the playlist');
 }
 
-export async function addSongToPlaylist(req: any, res: any): Promise<void> {
+export async function addSongToPlaylist(req: any, res: any, queue: Map<string, object[]>, eventSettings: Map<string, object>, alreadyPlayed: Map<string, object[]>): Promise<void> {
     const b: any = req.body;
 
     if (!b.songID || !b.playlistID || !b.user) return badRequest(res, 'Parameters missing');
@@ -128,7 +127,12 @@ export async function addSongToPlaylist(req: any, res: any): Promise<void> {
 
         if (!data.creators.includes(b.user)) data.creators.push(b.user);
 
-        data.addSong({ songID: b.songID, user: b.user });
+        data.addSong({ songID: b.songID, user: b.user })
+            .then(async () => {
+                if (!queue.get(b.playlistID)) return;
+                queue.set(b.playlistID, await generateQueue(queue, b.playlistID, eventSettings, alreadyPlayed));
+            })
+
         res.status(201).send('added to the playlist');
     })
 }
