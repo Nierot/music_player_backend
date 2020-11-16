@@ -42,6 +42,19 @@ export function checkCode(req: any, res: any, clients: Map<string, Socket>): voi
 
 }
 
+export function getCurrentlyPlaying(req: any, res: any, clients: Map<string, Socket>): void {
+
+    const code: string = req.body.playerCode;
+
+    if (checkRequest(code, res, clients)) {
+        const sock = clients.get(code);
+
+        sock.emit('whatAreYouPlaying', {}, (response: any) => {
+            res.status(200).json({ status: 200, message: 'ok', data: response })
+        })
+    }
+}
+
 
 function checkRequest(code: any, res: any, clients: Map<string, Socket>): boolean {
 

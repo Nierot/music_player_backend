@@ -6,7 +6,7 @@ import Database from './database/database';
 import bodyParser from 'body-parser';
 import * as crypto from 'crypto';
 import { checkSpotifyCode, refreshSpotifyCode } from './routes/spotify';
-import { pause, skip, previous, checkCode } from './routes/controller';
+import { pause, skip, previous, checkCode, getCurrentlyPlaying } from './routes/controller';
 import { getPeople, getQueue, makeQueue, nextInQueue } from './routes/queue';
 // @ts-expect-error
 import { port, route, debug } from './settings.js';
@@ -44,6 +44,7 @@ app.post(`${route}controller/pause`, (req, res) => pause(req, res, clients));
 app.post(`${route}controller/skip`, (req, res) => skip(req, res, clients));
 app.post(`${route}controller/previous`, (req, res) => previous(req, res, clients));
 app.post(`${route}controller/check`, (req, res) => checkCode(req, res, clients));
+app.post(`${route}controller/playing`, (req, res) => getCurrentlyPlaying(req, res, clients));
 app.get(`${route}queue/next`, async (req, res) => await nextInQueue(req, res, queue, eventSettings, alreadyPlayed));
 app.get(`${route}queue/generate`, async (req, res) => await makeQueue(req, res, queue, eventSettings, alreadyPlayed));
 app.get(`${route}queue/people`, (req, res) => getPeople(req, res, eventSettings));
