@@ -11,7 +11,7 @@
     "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
     "build": "tsc",
     "prestart": "npm run build",
-    "start": "node --inspect=5858 -r ts-node/register ./src/app.ts",
+    "start": "node -r ts-node/register ./src/app.ts",
     "start:watch": "nodemon"
   },
   "nodemonConfig": {
@@ -51,6 +51,7 @@
     "axios": "^0.21.0",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
+    "express": "^4.17.1",
     "mongoose": "^5.10.7",
     "node-fetch": "^2.6.1",
     "socket.io": "^2.3.0"

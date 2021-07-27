@@ -12,7 +12,6 @@ import { getPeople, getQueue, makeQueue, nextInQueue } from './routes/queue';
 import { port, route, debug } from './settings.js';
 // @ts-expect-error
 import cors from 'cors';
-import { type } from 'os';
 
 // Create the express app and define middleware
 const app = express();
@@ -29,9 +28,10 @@ db.connect();
 const queue: Map<string, object[]> = new Map();
 const alreadyPlayed: Map<string, object[]> = new Map();
 const eventSettings: Map<string, object> = new Map();
+const sinceLastEvent: Map<string, number> = new Map();
 
 // Routes
-app.post(`${route}playlist/song`, async (req, res) => await addSongToPlaylist(req, res, queue, eventSettings, alreadyPlayed));
+app.post(`${route}playlist/song`, async (req, res) => await addSongToPlaylist(req, res, queue, eventSettings, alreadyPlayed, sinceLastEvent));
 app.post(`${route}playlist/exists`, async (req, res) => await playlistExists(req, res));
 app.get(`${route}playlist/all`, async (req, res) => await getAllPublicLists(req, res));
 app.post(`${route}playlist`, async (req, res) => await newPlaylist(req, res));
@@ -45,10 +45,10 @@ app.post(`${route}controller/skip`, (req, res) => skip(req, res, clients));
 app.post(`${route}controller/previous`, (req, res) => previous(req, res, clients));
 app.post(`${route}controller/check`, (req, res) => checkCode(req, res, clients));
 app.post(`${route}controller/playing`, (req, res) => getCurrentlyPlaying(req, res, clients));
-app.get(`${route}queue/next`, async (req, res) => await nextInQueue(req, res, queue, eventSettings, alreadyPlayed));
-app.get(`${route}queue/generate`, async (req, res) => await makeQueue(req, res, queue, eventSettings, alreadyPlayed));
+app.get(`${route}queue/next`, async (req, res) => await nextInQueue(req, res, queue, eventSettings, alreadyPlayed, sinceLastEvent));
+app.get(`${route}queue/generate`, async (req, res) => await makeQueue(req, res, queue, eventSettings, alreadyPlayed, sinceLastEvent));
 app.get(`${route}queue/people`, (req, res) => getPeople(req, res, eventSettings));
-app.get(`${route}queue`, async (req, res) => await getQueue(req, res, queue, eventSettings, alreadyPlayed));
+app.get(`${route}queue`, async (req, res) => await getQueue(req, res, queue, eventSettings, alreadyPlayed, sinceLastEvent));
 app.get(route, home);
 
 
@@ -59,11 +59,12 @@ const server = app.listen(port, () => {
 
 // Setup Socket.IO
 const clients: Map<string, SocketIO.Socket> = new Map();
-const io = require('socket.io').listen(server);
+const io = require('socket.io').listen(server, {
+    path: `${route}socket.io`
+});
 
 io.sockets.on('connection', (socket: SocketIO.Socket) => {
-    // const id: string = crypto.randomBytes(2).toString('hex');
-    const id: string = 'aaaa';
+    const id: string = crypto.randomBytes(2).toString('hex');
     clients.set(id, socket);
     io.emit('code', id);
     console.log(`New client ${id}`);

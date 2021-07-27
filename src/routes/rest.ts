@@ -92,7 +92,7 @@ export async function newPlaylist(req: any, res: any): Promise<void> {
     res.status(201).send('added the playlist');
 }
 
-export async function addSongToPlaylist(req: any, res: any, queue: Map<string, object[]>, eventSettings: Map<string, object>, alreadyPlayed: Map<string, object[]>): Promise<void> {
+export async function addSongToPlaylist(req: any, res: any, queue: Map<string, object[]>, eventSettings: Map<string, object>, alreadyPlayed: Map<string, object[]>, sinceLastEvent: Map<string, number>): Promise<void> {
     const b: any = req.body;
 
     if (!b.songID || !b.playlistID || !b.user) return badRequest(res, 'Parameters missing');
@@ -130,7 +130,7 @@ export async function addSongToPlaylist(req: any, res: any, queue: Map<string, o
         data.addSong({ songID: b.songID, user: b.user })
             .then(async () => {
                 if (!queue.get(b.playlistID)) return;
-                queue.set(b.playlistID, await generateQueue(queue, b.playlistID, eventSettings, alreadyPlayed));
+                queue.set(b.playlistID, await generateQueue(queue, b.playlistID, eventSettings, alreadyPlayed, sinceLastEvent));
             })
 
         res.status(201).send('added to the playlist');
@@ -138,9 +138,16 @@ export async function addSongToPlaylist(req: any, res: any, queue: Map<string, o
 }
 
 export async function playlistExists(req: any, res: any): Promise<void> {
+    if (!req.body.playlistID) {
+        return badRequest(res, 'playlistID missing');
+    }
+
     let exists: boolean;
 
-    exists = await PlaylistModel.exists({ _id: req.body.playlistID }).catch(err => exists = false)
+    exists = await PlaylistModel.exists({ _id: req.body.playlistID }).catch(err => {
+        console.error(err)
+        return false
+    })
 
     res.status(200).json({ exists })
 }

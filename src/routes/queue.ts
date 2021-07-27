@@ -1,7 +1,7 @@
 import { PlaylistModel } from '../database/playlist/playlist.model';
 import shuffle from '../lib/shuffle';
 
-export async function makeQueue(req: any, res: any, queue: Map<string, object[]>, eventSettings: Map<string, object>, alreadyPlayed: Map<string, object[]>): Promise<void> {
+export async function makeQueue(req: any, res: any, queue: Map<string, object[]>, eventSettings: Map<string, object>, alreadyPlayed: Map<string, object[]>, sinceLastEvent: Map<string, number>): Promise<void> {
     if (!req.query || !req.query.p) return res.status(400).json({ status: 400, message: 'playlist missing' });
 
     if (!req.query.events || !req.query.listOfPeople || !req.query.songsBetweenEvents) return res.status(400).json({ status: 400, message: 'event parameters missing'});
@@ -18,8 +18,9 @@ export async function makeQueue(req: any, res: any, queue: Map<string, object[]>
 
     eventSettings.set(playlist, { people, songsBetweenEvents })
 
-    const newQueue: object[] = await generateQueue(queue, playlist, eventSettings, alreadyPlayed);
+    console.log('Generating new Queue for ' + playlist);
 
+    const newQueue: object[] = await generateQueue(queue, playlist, eventSettings, alreadyPlayed, sinceLastEvent);
     queue.set(playlist, newQueue);
     res.status(200).json({ status: 200, message: 'ok', queue: newQueue });
 }
@@ -37,7 +38,7 @@ export function getPeople(req: any, res: any, eventSettings: Map<string, object>
     res.status(200).json({ status: 200, message: 'ok', event })
 }
 
-export async function getQueue(req: any, res: any, queue: Map<string, object[]>, eventSettings: Map<string, object>, alreadyPlayed: Map<string, object[]>): Promise<void> {
+export async function getQueue(req: any, res: any, queue: Map<string, object[]>, eventSettings: Map<string, object>, alreadyPlayed: Map<string, object[]>, sinceLastEvent: Map<string, number>): Promise<void> {
     if (!req.query || !req.query.p) return res.status(400).json({ status: 400, message: 'playlist missing' });
 
     const playlist: string = req.query.p;
@@ -45,12 +46,12 @@ export async function getQueue(req: any, res: any, queue: Map<string, object[]>,
 
     if (!eventSettings.get(playlist)) return res.status(400).json({ status: 400, message: 'call /queue/generate first'})
 
-    if (!currentQueue || currentQueue.length === 0) queue.set(playlist, await generateQueue(res, playlist, eventSettings, alreadyPlayed));
+    if (!currentQueue || currentQueue.length === 0) queue.set(playlist, await generateQueue(res, playlist, eventSettings, alreadyPlayed, sinceLastEvent));
 
     res.status(200).json({ status: 200, message: 'ok', queue: queue.get(playlist) });
 }
 
-export async function nextInQueue(req: any, res: any, queue: Map<string, object[]>, eventSettings: Map<string, object>, alreadyPlayed: Map<string, object[]>): Promise<void> {
+export async function nextInQueue(req: any, res: any, queue: Map<string, object[]>, eventSettings: Map<string, object>, alreadyPlayed: Map<string, object[]>, sinceLastEvent: Map<string, number>): Promise<void> {
     if (!req.query || !req.query.p) return res.status(400).json({ status: 400, error: 'playlist missing' })
 
     const playlist: string = req.query.p;
@@ -60,7 +61,7 @@ export async function nextInQueue(req: any, res: any, queue: Map<string, object[
 
     if (!currentQueue || currentQueue.length === 0) {
         alreadyPlayed.set(playlist, []);
-        queue.set(playlist, await generateQueue(queue, playlist, eventSettings, alreadyPlayed));
+        queue.set(playlist, await generateQueue(queue, playlist, eventSettings, alreadyPlayed, sinceLastEvent));
     }
     currentQueue = queue.get(playlist);
     const next = currentQueue.shift();
@@ -68,22 +69,40 @@ export async function nextInQueue(req: any, res: any, queue: Map<string, object[
     previouslyPlayed.push(next);
     alreadyPlayed.set(playlist, previouslyPlayed);
 
+    // @ts-expect-error
+    if (next.songID === 'event') {
+        sinceLastEvent.set(playlist, 0);
+    } else {
+        let x = sinceLastEvent.get(playlist);
+        if (!x) x = 0;
+        sinceLastEvent.set(playlist, x + 1);
+    }
+
     res.status(200).json({ status: 200, message: 'ok', next })
 
 }
 
-export async function generateQueue(queue: Map<string, object[]>, playlist: string, eventSettings: Map<string, object>, alreadyPlayed: Map<string, object[]>): Promise<object[]> {
+export async function generateQueue(queue: Map<string, object[]>, playlist: string, eventSettings: Map<string, object>, alreadyPlayed: Map<string, object[]>, sinceLastEvent: Map<string, number>): Promise<object[]> {
 
     const newQueue: object[] = await getShuffledQueue(queue, playlist);
     const queueWithEvents: object[] = [];
     // @ts-expect-error
-    const songsBetweenEvents = eventSettings.get(playlist).songsBetweenEvents;
+    const songsBetweenEvents: number = eventSettings.get(playlist).songsBetweenEvents;
+    const songsSinceLastEvent: number = sinceLastEvent.get(playlist);
+    let oldEventAccountedFor: boolean = false;
+
+    if (songsBetweenEvents === -1) oldEventAccountedFor = true; // events disabled
+
     let i = 0;
-    const previouslyPlayed = alreadyPlayed.get(playlist);
+    const previouslyPlayed: object[] = alreadyPlayed.get(playlist);
 
     newQueue.forEach(x => {
         if (previouslyPlayed && hasSongBeenPlayedBefore(x, previouslyPlayed)) {
             i--;
+        } else if (!oldEventAccountedFor && (songsSinceLastEvent >= songsBetweenEvents || i === songsBetweenEvents - songsSinceLastEvent)) {
+            queueWithEvents.push({ songID: 'event', user: 'Event' });
+            queueWithEvents.push(x);
+            oldEventAccountedFor = true;
         } else if (i === songsBetweenEvents) {
             queueWithEvents.push({ songID: 'event', user: 'Event' });
             queueWithEvents.push(x);
@@ -93,6 +112,7 @@ export async function generateQueue(queue: Map<string, object[]>, playlist: stri
         }
         i++;
     })
+
     return queueWithEvents;
 }
 
